@@ -13,14 +13,17 @@ class penalty_function:
         if function_type not in ["per-timeslot", "linear"]:
             raise ValueError("Invalid function type. Must be 'per-timeslot' or 'linear'.")
         elif function_type == "per-timeslot":
-            if not isinstance(parameters, list):
-                raise ValueError("Parameters for 'per-timeslot' must be a list of (time, penalty) points.")
-            for point in parameters:
-                if not (isinstance(point, tuple) and len(point) == 2 and isinstance(point[0], int) and isinstance(point[1], (int, float))):
-                    raise ValueError("Each point must be a tuple of (time (int), penalty (real)).")
-                # Ensure non-decreasing positive function
-                if point[0] < 1 or point[1] < 0:
-                    raise ValueError("Time must be positive and penalty values must be non-negative.")
+            # Each point must be a tuple of (time (int), penalty (real)), time must be positive and penalty values must be non-negative.
+            if not isinstance(parameters, list) or not all(
+                isinstance(point, list) and len(point) == 2 and
+                isinstance(point[0], int) and point[0] > 0 and
+                isinstance(point[1], (int, float)) and point[1] >= 0
+                for point in parameters):
+                raise ValueError("Parameters for 'per-timeslot' must be a list of (time (int > 0), penalty (real >= 0)) points.")
+            # Ensure non-decreasing non-negative function. 
+            if any(
+                parameters[i][1] > parameters[i+1][1] for i in range(len(parameters)-1)):
+                raise ValueError("Penalty values must be non-decreasing.")
         elif function_type == "linear":
             if not (isinstance(parameters, dict) and "slope" in parameters and "intercept" in parameters):
                 raise ValueError("Parameters for 'linear' must be a dict with 'slope' and 'intercept'.")
@@ -49,6 +52,9 @@ class job:
     - penalty_function (object described above) non-decreasing positive function mapping tardiness to penalty incurred
     '''
     def __init__(self, id, release_time, processing_time, deadline, reward, drop_penalty, penalty_function):
+        # make sure 1 <= release_time < deadline and processing_time > 0
+        if not (1 <= release_time < deadline and processing_time > 0):
+            raise ValueError(f"Invalid job parameters for job {id}")
         self.id = id
         self.release_time = release_time
         self.processing_time = processing_time
@@ -61,6 +67,7 @@ def load_jobs_from_input_file(file_path):
     '''Load jobs from a JSON input file.
     The JSON file should have the following structure:
     {
+        "total_time_slots": 10,
         "jobs": [
             {
                 "id": "job1",
@@ -89,6 +96,9 @@ def load_jobs_from_input_file(file_path):
         # Construct penalty function (pf)
         pf_data = job_data["penalty_function"]
         pf = penalty_function(pf_data["function_type"], pf_data["parameters"])
+        # make sure each job's release time and deadline are within total_time_slots
+        if not (1 <= job_data["release_time"] < job_data["deadline"] <= data["total_time_slots"]):
+            raise ValueError(f"Job {job_data['id']}'s release time and deadline must be within [1,{data['total_time_slots']}(total_time_slots)].")
         job_instance = job(
             id=job_data["id"],
             release_time=job_data["release_time"],
