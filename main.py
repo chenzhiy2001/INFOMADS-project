@@ -1,4 +1,5 @@
 import json
+from pulp import *
 
 class penalty_function:
     '''A penalty function is defined by:
@@ -57,13 +58,35 @@ class job:
         self.penalty_function = penalty_function
 
 def load_jobs_from_input_file(file_path):
-    
+    '''Load jobs from a JSON input file.
+    The JSON file should have the following structure:
+    {
+        "jobs": [
+            {
+                "id": "job1",
+                "release_time": 1,
+                "processing_time": 2,
+                "deadline": 5,
+                "reward": 10,
+                "drop_penalty": 5,
+                "penalty_function": {
+                    "function_type": "linear",
+                    "parameters": {
+                        "slope": 1,
+                        "intercept": 0
+                    }
+                }
+            }
+        ]
+    }
+    '''
+
     with open(file_path, 'r') as f:
         data = json.load(f)
 
     jobs = []
     for job_data in data["jobs"]:
-        # Construct penalty function
+        # Construct penalty function (pf)
         pf_data = job_data["penalty_function"]
         pf = penalty_function(pf_data["function_type"], pf_data["parameters"])
         job_instance = job(
@@ -78,7 +101,6 @@ def load_jobs_from_input_file(file_path):
         jobs.append(job_instance)
     
     return jobs
-
 
 def main():
     jobs = load_jobs_from_input_file("input.json")
