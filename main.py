@@ -46,7 +46,7 @@ class job:
     - id (string) unique identifier of the job
     - release_time (integer, > 0)
     - processing_time (integer, > 0)
-    - deadline (integer, > release_time)
+    - deadline (integer, > release_time) deadline that CAN be exceeded
     - reward (real, > 0) the reward obtained if the job is completed by its deadline
     - drop_penalty (real, >= 0) the penalty incurred if the job is not completed. In the offline setting, this means that the job is not scheduled at all.
     - penalty_function (object described above) non-decreasing positive function mapping tardiness to penalty incurred
@@ -86,12 +86,17 @@ def load_jobs_from_input_file(file_path):
             }
         ]
     }
+    total_time_slots denotes how many time slots we have. 
+    time slot starts from 1 to total_time_slots, inclusive.
     '''
 
     with open(file_path, 'r') as f:
         data = json.load(f)
 
-    jobs = []
+    jobs = {
+        "total_time_slots": data["total_time_slots"],
+        "job_instances": []
+    }
     for job_data in data["jobs"]:
         # Construct penalty function (pf)
         pf_data = job_data["penalty_function"]
@@ -108,15 +113,68 @@ def load_jobs_from_input_file(file_path):
             drop_penalty=job_data["drop_penalty"],
             penalty_function=pf
         )
-        jobs.append(job_instance)
+        jobs["job_instances"].append(job_instance)
     
     return jobs
 
+
+def get_lower_bound_by_greedy(partial_schedule, current_timeslot, jobs):
+    '''
+    Compute a lower bound for the job assignment using a greedy algorithm.
+    '''
+    # Get all jobs that can be scheduled in the current time slot
+    available_jobs = [
+        job for job in jobs.job_instances #tag
+        if job.release_time <= current_timeslot # current_timeslot can > job.deadline because our deadline can be exceeded
+    ]
+
+def get_upper_bound_by_MILP(partial_schedule, current_timeslot, jobs):
+    '''
+    Compute an upper bound for the job assignment using a MILP formulation.
+    '''
+
+
+def schedule_jobs(jobs):
+    '''
+    - For each time slot, we will determine the lower and upper bounds for the job assignment of the current time slot.
+      - Lower bound is computed by a greedy algorithm.
+      - Upper bound is computed by solving a MILP formulation of the scheduling problem with an assumption of current job assignment.
+    - Then we will do branch-and-bound to find the optimal job assignment for current time slot.
+    '''
+    # we define partial_schedule as a dictionary mapping time slot to job id assigned at that time slot.
+    partial_schedule = {}
+    # the scheduler schedules jobs from time slot 1 to time slot total_time_slots.
+    for current_timeslot in range(1, jobs.total_time_slots + 1):
+        # assignment_bounds is an object mapping job id to (lower_bound, upper_bound)
+        assignment_bounds = {}
+        for job_instance in jobs.job_instances:
+            # if the job is already finished, skip it. Be careful that one value in partial_schedule corresponds to one time slot, so job_instance.id in partial_schedule.values() does not necessarily mean the job is finished.
+            if list(partial_schedule.values()).count(job_instance.id) >= job_instance.processing_time:
+                continue
+            # if the job is not yet released, skip it
+            if current_timeslot < job_instance.release_time:
+                continue
+            # otherwise, assume we assign this job to the current time slot
+            partial_schedule_assumption = partial_schedule.copy()
+            partial_schedule_assumption[current_timeslot] = job_instance.id
+            current_timeslot_assumption = current_timeslot + 1
+            lower_bound_for_this_assumption = get_lower_bound_by_greedy(partial_schedule_assumption, current_timeslot_assumption, jobs)
+            upper_bound_for_this_assumption = get_upper_bound_by_MILP(partial_schedule_assumption, current_timeslot_assumption, jobs)
+            assignment_bounds[job_instance.id] = (lower_bound_for_this_assumption, upper_bound_for_this_assumption)
+        # do branch-and-bound to find the optimal job assignment for current time slot
+        # not implemented yet
+
+
+    # partial_schedule now contains the job assignments for all time slots
+    return partial_schedule
+
+
+
+
 def main():
     jobs = load_jobs_from_input_file("input.json")
-    print("Hello from infomads-project!")
-    for job in jobs:
-        print(f"Loaded job: {job.id}")
+    output = schedule_jobs(jobs)
+    print("Scheduling output:", output)
 
 
 if __name__ == "__main__":
