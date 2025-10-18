@@ -35,6 +35,24 @@ class penalty_function:
             if parameters["intercept"] < 0:
                 raise ValueError("Intercept must be non-negative.")
         self.parameters = parameters
+    
+    def evaluate(self, tardiness):
+        '''Evaluate the penalty function at a given tardiness value (integer, > 0)'''
+        if tardiness <= 0:
+            raise ValueError("Tardiness must be positive.")
+        if self.function_type == "per-timeslot":
+            tardiness_penalty_points = self.parameters
+            tardiness_penalty = 0
+            for point in tardiness_penalty_points:
+                if tardiness >= point[0]:
+                    tardiness_penalty = point[1]
+                else:
+                    break
+            return tardiness_penalty
+        elif self.function_type == "linear":
+            slope = self.parameters["slope"]
+            intercept = self.parameters["intercept"]
+            return slope * tardiness + intercept
 
 
 class job:
@@ -120,13 +138,66 @@ def load_jobs_from_input_file(file_path):
 
 def get_lower_bound_by_greedy(partial_schedule, current_timeslot, jobs):
     '''
-    Compute a lower bound for the job assignment using a greedy algorithm.
+    Compute a lower bound for the job assignment using a greedy, earliest deadline first (EDF) algorithm.
+    Currently our implementation of EDF is NOT efficient because it unnecessarily re-evaluates available jobs at each time slot. BUT considering that we may change EDF to other greedy algorithms in the future, we keep this simple and readable implementation for now.
     '''
-    # Get all jobs that can be scheduled in the current time slot, i.e., released by (which means before or at) current_timeslot and not yet finished
-    available_jobs = [
-        job for job in jobs.job_instances
-        if job.release_time <= current_timeslot and list(partial_schedule.values()).count(job.id) < job.processing_time
-    ]
+    # compute reward for already FINISHED jobs in partial_schedule. Jobs that are halfway done or not yet started are being handled in the next part, and those that are not scheduled at all will be handled at the final part of this function.
+    completed_jobs_reward = 0
+    for job_instance in jobs.job_instances:
+        if list(partial_schedule.values()).count(job_instance.id) == job_instance.processing_time:
+            # job is finished, check if it's on time or tardy
+            completion_time = max(t for t, job_id in partial_schedule.items() if job_id == job_instance.id)
+            if completion_time <= job_instance.deadline:
+                # on time
+                completed_jobs_reward += job_instance.reward
+            else:
+                # tardy
+                tardiness = completion_time - job_instance.deadline
+                tardiness_penalty = job_instance.penalty_function.evaluate(tardiness)
+                completed_jobs_reward += job_instance.reward - tardiness_penalty
+        elif list(partial_schedule.values()).count(job_instance.id) > job_instance.processing_time:
+            # job is over-finished (should not happen in a valid schedule)
+            raise ValueError(f"Job {job_instance.id} is over-finished.")
+
+    # compute the reward change from current_timeslot to total_time_slots
+    reward_change = 0
+    # iterate from current_timeslot to total_time_slots to complete the partial schedule
+    for t in range(current_timeslot, jobs.total_time_slots + 1):
+        # find the job with the earliest deadline among the available jobs
+        # Get all jobs that can be scheduled in t, i.e., released by (which means before or at) t and not yet finished
+        available_jobs = [
+            job for job in jobs.job_instances
+            if job.release_time <= t and list(partial_schedule.values()).count(job.id) < job.processing_time
+        ]
+        if available_jobs:
+            # Sort available jobs by their deadline (earliest deadline first)
+            available_jobs.sort(key=lambda x: x.deadline)
+            # Assign the job with the earliest deadline to the current time slot
+            selected_job = available_jobs[0]
+            partial_schedule[t] = selected_job.id
+            # UPDATE the REWARD CHANGE
+            # Check if the job is completed at this time slot
+            if list(partial_schedule.values()).count(selected_job.id) == selected_job.processing_time:
+                # Job is completed, check if it's on time or tardy
+                completion_time = t
+                if completion_time <= selected_job.deadline:
+                    reward_change += selected_job.reward
+                else:
+                    # Calculate tardiness penalty
+                    tardiness = completion_time - selected_job.deadline
+                    tardiness_penalty = selected_job.penalty_function.evaluate(tardiness)
+                    reward_change += selected_job.reward - tardiness_penalty
+
+    completed_jobs_reward += reward_change
+
+    # final part: compute penalty for unfinished or unscheduled jobs
+    for job_instance in jobs.job_instances:
+        if list(partial_schedule.values()).count(job_instance.id) < job_instance.processing_time:
+            # Job is unfinished, apply penalty
+            completed_jobs_reward -= job_instance.drop_penalty
+
+    return completed_jobs_reward
+
 
 def get_upper_bound_by_MILP(partial_schedule, current_timeslot, jobs):
     '''
@@ -149,8 +220,10 @@ def schedule_jobs(jobs):
         assignment_bounds = {}
         for job_instance in jobs.job_instances:
             # if the job is already finished, skip it. Be careful that one value in partial_schedule corresponds to one time slot, so job_instance.id in partial_schedule.values() does not necessarily mean the job is finished.
-            if list(partial_schedule.values()).count(job_instance.id) >= job_instance.processing_time:
+            if list(partial_schedule.values()).count(job_instance.id) == job_instance.processing_time:
                 continue
+            elif list(partial_schedule.values()).count(job_instance.id) > job_instance.processing_time:
+                raise ValueError(f"Job {job_instance.id} has been assigned more time slots than its processing time.")
             # if the job is not yet released, skip it
             if current_timeslot < job_instance.release_time:
                 continue
