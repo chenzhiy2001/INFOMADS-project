@@ -122,10 +122,10 @@ def get_lower_bound_by_greedy(partial_schedule, current_timeslot, jobs):
     '''
     Compute a lower bound for the job assignment using a greedy algorithm.
     '''
-    # Get all jobs that can be scheduled in the current time slot
+    # Get all jobs that can be scheduled in the current time slot, i.e., released by (which means before or at) current_timeslot and not yet finished
     available_jobs = [
-        job for job in jobs.job_instances #tag
-        if job.release_time <= current_timeslot # current_timeslot can > job.deadline because our deadline can be exceeded
+        job for job in jobs.job_instances
+        if job.release_time <= current_timeslot and list(partial_schedule.values()).count(job.id) < job.processing_time
     ]
 
 def get_upper_bound_by_MILP(partial_schedule, current_timeslot, jobs):
