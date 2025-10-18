@@ -138,7 +138,7 @@ def load_jobs_from_input_file(file_path):
 
 def get_lower_bound_by_greedy(partial_schedule, current_timeslot, jobs):
     '''
-    Compute a lower bound for the job assignment using a greedy, earliest deadline first (EDF) algorithm.
+    Compute a lower bound for the job assignment by evaluating an instance created by greedy, earliest deadline first (EDF) algorithm.
     Currently our implementation of EDF is NOT efficient because it unnecessarily re-evaluates available jobs at each time slot. BUT considering that we may change EDF to other greedy algorithms in the future, we keep this simple and readable implementation for now.
     '''
     # compute reward for already FINISHED jobs in partial_schedule. Jobs that are halfway done or not yet started are being handled in the next part, and those that are not scheduled at all will be handled at the final part of this function.
