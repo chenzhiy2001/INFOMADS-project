@@ -6,4 +6,5 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "pulp>=3.3.0",
+    "scipy>=1.13.1",
 ]
