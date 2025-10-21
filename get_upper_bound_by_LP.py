@@ -1,7 +1,7 @@
 # scipy for MILP
 from scipy.optimize import linprog
 
-def get_upper_bound_by_MILP(partial_schedule, current_timeslot, jobs):
+def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
     '''
     Compute an upper bound for the job assignment using a linear programming relaxation (the original problem is an integer linear programming problem). The computation is done via scipy.optimize.linprog for linear programming.
     '''

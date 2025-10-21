@@ -3,7 +3,7 @@ from shutil import copy
 from penalty_function import penalty_function
 from job import job
 from get_lower_bound_by_greedy import get_lower_bound_by_greedy
-from get_upper_bound_by_MILP import get_upper_bound_by_MILP
+from get_upper_bound_by_LP import get_upper_bound_by_LP
 
 def load_jobs_from_input_file(file_path):
     '''Load jobs from a JSON input file.
@@ -110,7 +110,7 @@ def schedule_jobs(jobs):
             current_timeslot_assumption = current_timeslot + 1
             if current_timeslot < jobs.total_time_slots:
                 lower_bound_for_this_assumption = get_lower_bound_by_greedy(partial_schedule_assumption, current_timeslot_assumption, jobs)
-                upper_bound_for_this_assumption = get_upper_bound_by_MILP(partial_schedule_assumption, current_timeslot_assumption, jobs)
+                upper_bound_for_this_assumption = get_upper_bound_by_LP(partial_schedule_assumption, current_timeslot_assumption, jobs)
                 # first we add the new schedule to branch_and_bound_tree
                 new_partial_schedule_id = len(branch_and_bound_tree)
                 new_partial_schedule = {
