@@ -499,23 +499,30 @@ def schedule_jobs(jobs):
             update_range_node["lower_bound"] = max(child_lower_bounds + [update_range_node["lower_bound"]])
             # new upper bound is the biggest amongst those that are >= parent's new lower bound, NOT including parent's old upper bound
             update_range_node["upper_bound"] = max(ub for ub in child_upper_bounds if ub >= update_range_node["lower_bound"])
-            # before moving up we need to delete some branches whose upper bound < parent's new lower bound
+            # before moving up we need to do 2 things
             for child_id in update_range_node["children_ids"]:
+                # 1. delete some branches whose upper bound < parent's new lower bound
                 if branch_and_bound_tree[child_id]["upper_bound"] < update_range_node["lower_bound"]:
                     # remove this child id from parent's children_ids so it's not reachable in the tree anymore
                     update_range_node["children_ids"].remove(child_id)
                     # add this child id to deleted_nodes for record
                     deleted_nodes.append(child_id)
+                # 2. record optimal solutions where lower bound == upper bound
+                if branch_and_bound_tree[child_id]["lower_bound"] == branch_and_bound_tree[child_id]["upper_bound"]:
+                    optimal_solutions.append(branch_and_bound_tree[child_id])
             # move up to parent
             if update_range_node["parent_id"] is not None:
                 update_range_node = branch_and_bound_tree[update_range_node["parent_id"]]
             else:
                 break
+    return optimal_solutions
 
 def main():
     jobs = load_jobs_from_input_file("input.json")
     output = schedule_jobs(jobs)
-    print("Scheduling output:", output)
+    print("Optimal schedules found:")
+    for schedule in output:
+        print(schedule)
 
 
 if __name__ == "__main__":
