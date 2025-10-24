@@ -8,7 +8,7 @@ def schedule_counter(job_id, schedule_so_far):
             count += 1
     return count
 
-def online_schedule(current_time_slot, job_instances, total_time_slots, reward_so_far, schedule_so_far):
+def online_schedule(current_time_slot, job_instances, total_time_slots, reward_so_far, schedule_so_far, alternative_u=None):
 
     def c(job, current_time_slot):
         if current_time_slot + job.processing_time >= job.deadline + 1:
@@ -18,6 +18,9 @@ def online_schedule(current_time_slot, job_instances, total_time_slots, reward_s
 
     def u(job, current_timeslots):
         return (job.reward - c(job, current_timeslots)) / job.processing_time
+    
+    if alternative_u is not None:
+        u = alternative_u
     
     # t_i_asterisk is the last time step (so they are integers) by which the penalty of pushing the job back by t_i_asterisk time slots does NOT exceeds the reward of job i
     t_i_asterisk = {}
