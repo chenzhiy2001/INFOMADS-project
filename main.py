@@ -178,6 +178,9 @@ def schedule_jobs(jobs):
     return optimal_solutions
 
 def main():
+    # runtime : compare between bruteforce and infomads
+    # online: existing work vs infomads
+    # offline: bruteforce vs infomads
     jobs = load_jobs_from_input_file("input.json")
     output = schedule_jobs(jobs)
     print("Optimal schedules found:")
