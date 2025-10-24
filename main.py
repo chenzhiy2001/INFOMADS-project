@@ -94,7 +94,7 @@ def schedule_jobs(jobs):
     while BFS_queue:
         partial_schedule = BFS_queue.pop(0)
         # examine all "child nodes" (partial schedules) at the current time slot
-        for job_instance in jobs.job_instances:
+        for job_instance in jobs["job_instances"]:
             # start by ditching infeasible children nodes
             # if the job is already finished, skip it. Be careful that one value in partial_schedule corresponds to one time slot, so job_instance.id in partial_schedule["content"].values() does not necessarily mean the job is finished.
             if list(partial_schedule["content"].values()).count(job_instance.id) == job_instance.processing_time:

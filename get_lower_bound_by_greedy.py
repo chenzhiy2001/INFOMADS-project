@@ -5,7 +5,7 @@ def get_lower_bound_by_greedy(partial_schedule, current_timeslot, jobs):
     '''
     # compute reward for already FINISHED jobs in partial_schedule. Jobs that are halfway done or not yet started are being handled in the next part, and those that are not scheduled at all will be handled at the final part of this function.
     completed_jobs_reward = 0
-    for job_instance in jobs.job_instances:
+    for job_instance in jobs["job_instances"]:
         if list(partial_schedule["content"].values()).count(job_instance.id) == job_instance.processing_time:
             # job is finished, check if it's on time or tardy
             completion_time = max(t for t, job_id in partial_schedule["content"].items() if job_id == job_instance.id)
@@ -28,7 +28,7 @@ def get_lower_bound_by_greedy(partial_schedule, current_timeslot, jobs):
         # find the job with the earliest deadline among the available jobs
         # Get all jobs that can be scheduled in t, i.e., released by (which means before or at) t and not yet finished
         available_jobs = [
-            job for job in jobs.job_instances
+            job for job in jobs["job_instances"]
             if job.release_time <= t and list(partial_schedule["content"].values()).count(job.id) < job.processing_time
         ]
         if available_jobs:
@@ -53,7 +53,7 @@ def get_lower_bound_by_greedy(partial_schedule, current_timeslot, jobs):
     completed_jobs_reward += reward_change
 
     # final part: compute penalty for unfinished or unscheduled jobs
-    for job_instance in jobs.job_instances:
+    for job_instance in jobs["job_instances"]:
         if list(partial_schedule["content"].values()).count(job_instance.id) < job_instance.processing_time:
             # Job is unfinished, apply penalty
             completed_jobs_reward -= job_instance.drop_penalty

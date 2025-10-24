@@ -7,22 +7,22 @@ def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
     Compute an upper bound for the job assignment using a linear programming relaxation (the original problem is an integer linear programming problem). The computation is done via scipy.optimize.linprog for linear programming.
     '''
     # if penalty functions are all linear
-    if all(job_instance.penalty_function.function_type == "linear" for job_instance in jobs.job_instances):
+    if all(job_instance.penalty_function.function_type == "linear" for job_instance in jobs["job_instances"]):
 
         # The input of linprog are lists, but our job_instance_id are strings. Therefore we need to maintain a mapping between job_instance_id and its index in the lists.
-        job_id_to_index = {job_instance.id: index for index, job_instance in enumerate(jobs.job_instances)}
-        index_to_job_id = {index: job_instance.id for index, job_instance in enumerate(jobs.job_instances)}
+        job_id_to_index = {job_instance.id: index for index, job_instance in enumerate(jobs["job_instances"])}
+        index_to_job_id = {index: job_instance.id for index, job_instance in enumerate(jobs["job_instances"])}
         
         # from now on, we will use job indices instead of job ids for easier handling with linprog.
         # w_i_hat is a list (with the order of job indices) of the reward that is not being subtracted by tardiness penalty for job i, a fixed value
-        w_i_hat = [job_instance.reward for job_instance in jobs.job_instances]
+        w_i_hat = [job_instance.reward for job_instance in jobs["job_instances"]]
 
         # t_hat is current timestep, a fixed value
         t_hat = current_timeslot - 1 # NOTE: do we need to -1 here?
 
         # t_i_asterisk is the last time step (so they are integers) by which the penalty of pushing the job back by t_i_asterisk time slots does NOT exceeds the reward of job i
         t_i_asterisk = [0] * num_jobs
-        for job_index, job_instance in enumerate(jobs.job_instances):
+        for job_index, job_instance in enumerate(jobs["job_instances"]):
             slope = job_instance.penalty_function.parameters["slope"]
             intercept = job_instance.penalty_function.parameters["intercept"]
             if slope == 0:
@@ -36,23 +36,23 @@ def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
                     t_i_asterisk[job_index] = t_i_asterisk_value
 
         # r_i is the release time of job i, a fixed value
-        r_i = [job_instance.release_time for job_instance in jobs.job_instances]
+        r_i = [job_instance.release_time for job_instance in jobs["job_instances"]]
 
         # d_i is the deadline of job i, a fixed value
-        d_i = [job_instance.deadline for job_instance in jobs.job_instances]
+        d_i = [job_instance.deadline for job_instance in jobs["job_instances"]]
 
         # p_i is the processing time of job i, a fixed value
-        p_i = [job_instance.processing_time for job_instance in jobs.job_instances]
+        p_i = [job_instance.processing_time for job_instance in jobs["job_instances"]]
 
         # f_i is the penalty of pushing a job back (by a number of time slots). Since it is an expression consisting of slope * tardiness + intercept, we define slope and intercept separately.
-        f_i_slope = [job_instance.penalty_function.parameters["slope"] for job_instance in jobs.job_instances]
-        f_i_intercept = [job_instance.penalty_function.parameters["intercept"] for job_instance in jobs.job_instances]
+        f_i_slope = [job_instance.penalty_function.parameters["slope"] for job_instance in jobs["job_instances"]]
+        f_i_intercept = [job_instance.penalty_function.parameters["intercept"] for job_instance in jobs["job_instances"]]
 
 
         # x_i_t denotes whether we schedule job i at time slot t. In the original ILP problem it is a binary **decision** variable, but in the LP relaxation it is a continuous **decision** variable in [0,1].
         # now we construct the coefficients for x_i_t. They are all 0 because they do not appear in the objective function.
         # we will flatten the 2D (job i, time slot t) structure into a 1D list for linprog.
-        num_jobs = len(jobs.job_instances)
+        num_jobs = len(jobs["job_instances"])
         num_time_slots = jobs.total_time_slots
         x_i_t_coefficients = [0] * (num_jobs * num_time_slots)
 
