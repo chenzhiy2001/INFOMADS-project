@@ -195,7 +195,6 @@ def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
         # I thought linprog is maximizing by default, but it turns out it is minimizing by default. Therefore we need to negate the objective function coefficients to convert our maximization problem into a minimization problem.
         objective_function_coefficients = [-coeff for coeff in objective_function_coefficients]
         res = linprog(c=objective_function_coefficients, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method='highs')
-        print(f"LP relaxation result at time slot {current_timeslot}: {res}")
         return -res.fun  # negate back to get the maximized value
 
     else:

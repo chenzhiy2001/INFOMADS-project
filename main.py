@@ -126,7 +126,6 @@ def schedule_jobs(jobs):
                 branch_and_bound_tree[new_partial_schedule_id] = new_partial_schedule
                 branch_and_bound_tree[partial_schedule["id"]]["children_ids"].append(new_partial_schedule_id)
                 # then we decide whether to add this new schedule to BFS queue for FURTHER expansion
-                print(f"At time slot {current_timeslot}, assuming we assign job {job_instance.id}, lower bound: {lower_bound_for_this_assumption}, upper bound: {upper_bound_for_this_assumption}.")
                 if lower_bound_for_this_assumption < upper_bound_for_this_assumption:  # add to BFS queue for further expansion
                     BFS_queue.append(new_partial_schedule)
                 elif lower_bound_for_this_assumption == upper_bound_for_this_assumption:  # found optimal solution for this branch, can stop expanding further
