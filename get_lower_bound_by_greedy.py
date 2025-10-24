@@ -24,7 +24,7 @@ def get_lower_bound_by_greedy(partial_schedule, current_timeslot, jobs):
     # compute the reward change from current_timeslot to total_time_slots
     reward_change = 0
     # iterate from current_timeslot to total_time_slots to complete the partial schedule
-    for t in range(current_timeslot, jobs.total_time_slots + 1):
+    for t in range(current_timeslot, jobs["total_time_slots"] + 1):
         # find the job with the earliest deadline among the available jobs
         # Get all jobs that can be scheduled in t, i.e., released by (which means before or at) t and not yet finished
         available_jobs = [

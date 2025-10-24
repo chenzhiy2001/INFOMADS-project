@@ -27,7 +27,7 @@ def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
             intercept = job_instance.penalty_function.parameters["intercept"]
             if slope == 0:
                 # penalty is constant, so t_i_asterisk is the final time slot
-                t_i_asterisk[job_index] = jobs.total_time_slots
+                t_i_asterisk[job_index] = jobs["total_time_slots"]
             else:
                 t_i_asterisk_value = floor((w_i_hat[job_index] - intercept) / slope) # round down to nearest integer, which make sense because we want the LAST time step that is still WITHIN the reward
                 if t_i_asterisk_value < 0:
@@ -53,7 +53,7 @@ def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
         # now we construct the coefficients for x_i_t. They are all 0 because they do not appear in the objective function.
         # we will flatten the 2D (job i, time slot t) structure into a 1D list for linprog.
         num_jobs = len(jobs["job_instances"])
-        num_time_slots = jobs.total_time_slots
+        num_time_slots = jobs["total_time_slots"]
         x_i_t_coefficients = [0] * (num_jobs * num_time_slots)
 
         # now we construct the coefficients for y_i. The coefficient for y_i is w_i_hat.

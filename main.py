@@ -109,7 +109,7 @@ def schedule_jobs(jobs):
             partial_schedule_assumption = copy.deepcopy(partial_schedule)
             partial_schedule_assumption["content"][current_timeslot] = job_instance.id
             current_timeslot_assumption = current_timeslot + 1
-            if current_timeslot < jobs.total_time_slots:
+            if current_timeslot < jobs["total_time_slots"]:
                 lower_bound_for_this_assumption = get_lower_bound_by_greedy(partial_schedule_assumption, current_timeslot_assumption, jobs)
                 upper_bound_for_this_assumption = get_upper_bound_by_LP(partial_schedule_assumption, current_timeslot_assumption, jobs)
                 # first we add the new schedule to branch_and_bound_tree
@@ -131,7 +131,7 @@ def schedule_jobs(jobs):
                     pass
                 else:
                     raise ValueError("Lower bound exceeds upper bound, which should not happen.")
-            elif current_timeslot == jobs.total_time_slots:  # last time slot, no need to compute bounds for next time slot
+            elif current_timeslot == jobs["total_time_slots"]:  # last time slot, no need to compute bounds for next time slot
                 # calculate the exact reward for this complete schedule
                 final_reward = get_lower_bound_by_greedy(partial_schedule_assumption, current_timeslot_assumption, jobs) # in this case, current_timeslot_assumption = total_time_slots + 1, so it exceeds total time slots
                 # we add the new schedule to branch_and_bound_tree
