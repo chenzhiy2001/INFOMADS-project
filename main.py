@@ -5,6 +5,7 @@ from job import job
 from get_lower_bound_by_greedy import get_lower_bound_by_greedy
 from get_upper_bound_by_LP import get_upper_bound_by_LP
 from test_instances import generate_random_instance
+from bruteforce import bruteforce_schedule, schedule_counter
 
 def load_jobs_from_input_file(file_path):
     '''Load jobs from a JSON input file.
@@ -154,24 +155,26 @@ def schedule_jobs(jobs):
         # we do this by traversing up the tree from the current partial_schedule to the root
         update_range_node = partial_schedule
         while True:
-            # update parent's lower bound and upper bound
-            child_lower_bounds = [branch_and_bound_tree[child_id]["lower_bound"] for child_id in update_range_node["children_ids"]]
-            child_upper_bounds = [branch_and_bound_tree[child_id]["upper_bound"] for child_id in update_range_node["children_ids"]]
-            # new lower bound is the MAXIMUM of children's lower bounds and parent's lower bound
-            update_range_node["lower_bound"] = max(child_lower_bounds + [update_range_node["lower_bound"]])
-            # new upper bound is the biggest amongst those that are >= parent's new lower bound, NOT including parent's old upper bound
-            update_range_node["upper_bound"] = max(ub for ub in child_upper_bounds if ub >= update_range_node["lower_bound"])
-            # before moving up we need to do 2 things
-            for child_id in update_range_node["children_ids"]:
-                # 1. delete some branches whose upper bound < parent's new lower bound
-                if branch_and_bound_tree[child_id]["upper_bound"] < update_range_node["lower_bound"]:
-                    # remove this child id from parent's children_ids so it's not reachable in the tree anymore
-                    update_range_node["children_ids"].remove(child_id)
-                    # add this child id to deleted_nodes for record
-                    deleted_nodes.append(child_id)
-                # 2. record optimal solutions where lower bound == upper bound
-                if branch_and_bound_tree[child_id]["lower_bound"] == branch_and_bound_tree[child_id]["upper_bound"]:
-                    optimal_solutions.append(branch_and_bound_tree[child_id])
+            # only update if there are children nodes
+            if update_range_node["children_ids"]:
+                # update parent's lower bound and upper bound
+                child_lower_bounds = [branch_and_bound_tree[child_id]["lower_bound"] for child_id in update_range_node["children_ids"]]
+                child_upper_bounds = [branch_and_bound_tree[child_id]["upper_bound"] for child_id in update_range_node["children_ids"]]
+                # new lower bound is the MAXIMUM of children's lower bounds and parent's lower bound
+                update_range_node["lower_bound"] = max(child_lower_bounds + [update_range_node["lower_bound"]])
+                # new upper bound is the biggest amongst those that are >= parent's new lower bound, NOT including parent's old upper bound
+                update_range_node["upper_bound"] = max(ub for ub in child_upper_bounds if ub >= update_range_node["lower_bound"])
+                # before moving up we need to do 2 things
+                for child_id in update_range_node["children_ids"]:
+                    # 1. delete some branches whose upper bound < parent's new lower bound
+                    if branch_and_bound_tree[child_id]["upper_bound"] < update_range_node["lower_bound"]:
+                        # remove this child id from parent's children_ids so it's not reachable in the tree anymore
+                        update_range_node["children_ids"].remove(child_id)
+                        # add this child id to deleted_nodes for record
+                        deleted_nodes.append(child_id)
+                    # 2. record optimal solutions where lower bound == upper bound
+                    if branch_and_bound_tree[child_id]["lower_bound"] == branch_and_bound_tree[child_id]["upper_bound"]:
+                        optimal_solutions.append(branch_and_bound_tree[child_id])
             # move up to parent
             if update_range_node["parent_id"] is not None:
                 update_range_node = branch_and_bound_tree[update_range_node["parent_id"]]
@@ -190,6 +193,16 @@ def main():
     print("Optimal schedules found:")
     for schedule in output:
         print(schedule)
+    bruteforce_schedule_output = bruteforce_schedule(
+        current_time_slot=1,
+        job_instances=jobs["job_instances"],
+        total_time_slots=jobs["total_time_slots"],
+        reward_so_far=0,
+        schedule_so_far=[]
+    )
+    print("Bruteforce schedule output:")
+    print(bruteforce_schedule_output)
+    
 
 
 if __name__ == "__main__":

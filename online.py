@@ -2,8 +2,11 @@ from math import floor
 
 
 def schedule_counter(job_id, schedule_so_far):
+    print(schedule_so_far)
     count = 0
-    for time_slot, scheduled_job_id in schedule_so_far:
+    for schedule_slice in schedule_so_far:
+        time_slot = schedule_slice[0]
+        scheduled_job_id = schedule_slice[1]
         if scheduled_job_id == job_id:
             count += 1
     return count
@@ -54,7 +57,7 @@ def online_schedule(current_time_slot, job_instances, total_time_slots, reward_s
             best_job = job
 
     if not available_jobs and current_time_slot < total_time_slots:
-        return (reward_so_far, schedule_so_far + (current_time_slot, None))
+        return (reward_so_far, schedule_so_far + [(current_time_slot, None)])
     
     if available_jobs and current_time_slot < total_time_slots:
         # suppose we schedule that job at this time slot
@@ -68,7 +71,7 @@ def online_schedule(current_time_slot, job_instances, total_time_slots, reward_s
                 tardiness = current_time_slot - (best_job.deadline - 1)
                 reward_incurred_in_this_time_slot -= best_job.penalty_function.evaluate(tardiness)
         return (reward_so_far + reward_incurred_in_this_time_slot,
-                schedule_so_far + (current_time_slot, best_job.id))
+                schedule_so_far + [(current_time_slot, best_job.id)])
     
     if not available_jobs and current_time_slot == total_time_slots:
         final_settle = 0
@@ -86,7 +89,7 @@ def online_schedule(current_time_slot, job_instances, total_time_slots, reward_s
                     final_settle -= job.penalty_function.evaluate(tardiness)
         return (
             reward_so_far + final_settle,
-            schedule_so_far + (current_time_slot, None)
+            schedule_so_far + [(current_time_slot, None)]
         )
     if available_jobs and current_time_slot == total_time_slots:
         reward_incurred_in_this_time_slot = 0
@@ -113,7 +116,7 @@ def online_schedule(current_time_slot, job_instances, total_time_slots, reward_s
                     final_settle -= job.penalty_function.evaluate(tardiness)
         return (
             reward_so_far + reward_incurred_in_this_time_slot + final_settle,
-            schedule_so_far + (current_time_slot, best_job.id)
+            schedule_so_far + [(current_time_slot, best_job.id)]
         )
 
     

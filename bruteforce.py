@@ -24,8 +24,11 @@ def two_th(it: Iterable[Sequence[T]]) -> Iterator[T]:
 #     print(item)
 
 def schedule_counter(job_id, schedule_so_far):
+    print(schedule_so_far)
     count = 0
-    for time_slot, scheduled_job_id in schedule_so_far:
+    for schedule_slice in schedule_so_far:
+        time_slot = schedule_slice[0]
+        scheduled_job_id = schedule_slice[1]
         if scheduled_job_id == job_id:
             count += 1
     return count
@@ -76,7 +79,7 @@ def bruteforce_schedule(current_time_slot, job_instances, total_time_slots, rewa
             available_jobs.append(job)
     # if no available jobs at this time slot and this time slot < total time slots, this time slot ++, 
     if not available_jobs and current_time_slot < total_time_slots:
-        return bruteforce_schedule(current_time_slot + 1, job_instances, total_time_slots, reward_so_far, schedule_so_far + (current_time_slot, None)) # this is a tail recursion where the return value of the last function call is the return value of the first function call
+        return bruteforce_schedule(current_time_slot + 1, job_instances, total_time_slots, reward_so_far, schedule_so_far + [(current_time_slot, None)]) # this is a tail recursion where the return value of the last function call is the return value of the first function call
     if available_jobs and current_time_slot < total_time_slots:
         candidate_solutions = []
         for job in available_jobs:
@@ -95,7 +98,7 @@ def bruteforce_schedule(current_time_slot, job_instances, total_time_slots, rewa
                 job_instances,
                 total_time_slots,
                 reward_so_far + reward_incurred_in_this_time_slot,
-                schedule_so_far + (current_time_slot, job.id)
+                schedule_so_far + [(current_time_slot, job.id)]
             ))
         # consider the idle time slot as well
         candidate_solutions.append(bruteforce_schedule( 
@@ -103,7 +106,7 @@ def bruteforce_schedule(current_time_slot, job_instances, total_time_slots, rewa
             job_instances,
             total_time_slots,
             reward_so_far,
-            schedule_so_far + (current_time_slot, None)
+            schedule_so_far + [(current_time_slot, None)]
         ))
         # return the maximum reward and corresponding optimal schedule among all candidate solutions.
         return max(candidate_solutions, key=lambda x: x[0])
@@ -123,7 +126,7 @@ def bruteforce_schedule(current_time_slot, job_instances, total_time_slots, rewa
                     final_settle -= job.penalty_function.evaluate(tardiness)
         return (
             reward_so_far + final_settle,
-            schedule_so_far + (current_time_slot, None)
+            schedule_so_far + [(current_time_slot, None)]
         )
     if available_jobs and current_time_slot == total_time_slots:
         candidate_solutions = []
@@ -155,11 +158,11 @@ def bruteforce_schedule(current_time_slot, job_instances, total_time_slots, rewa
                         final_settle -= every_job.penalty_function.evaluate(tardiness)
             candidate_solutions.append((
                 reward_so_far + reward_incurred_in_this_time_slot + final_settle,
-                schedule_so_far + (current_time_slot, job.id)
+                schedule_so_far + [(current_time_slot, job.id)]
             ))
         # consider the idle time slot as well
         candidate_solutions.append((
             reward_so_far + final_settle,
-            schedule_so_far + (current_time_slot, None)
+            schedule_so_far + [(current_time_slot, None)]
         ))
         return max(candidate_solutions, key=lambda x: x[0])
