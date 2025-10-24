@@ -15,7 +15,7 @@ class job:
     def __init__(self, id, release_time, processing_time, deadline, reward, drop_penalty, penalty_function):
         # make sure 1 <= release_time < deadline and processing_time > 0
         if not (1 <= release_time < deadline and processing_time > 0):
-            raise ValueError(f"Invalid job parameters for job {id}")
+            raise ValueError(f"Invalid job parameters for \njob {id}, \nrelease_time: {release_time}, \nprocessing_time: {processing_time}, \ndeadline: {deadline}, \nreward: {reward}, \ndrop_penalty: {drop_penalty}")
         self.id = id
         self.release_time = release_time
         self.processing_time = processing_time

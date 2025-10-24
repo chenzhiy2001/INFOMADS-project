@@ -4,6 +4,7 @@ from penalty_function import penalty_function
 from job import job
 from get_lower_bound_by_greedy import get_lower_bound_by_greedy
 from get_upper_bound_by_LP import get_upper_bound_by_LP
+from test_instances import generate_random_instance
 
 def load_jobs_from_input_file(file_path):
     '''Load jobs from a JSON input file.
@@ -181,7 +182,9 @@ def main():
     # runtime : compare between bruteforce and infomads
     # online: existing work vs infomads
     # offline: bruteforce vs infomads
-    jobs = load_jobs_from_input_file("input.json")
+
+    # jobs = load_jobs_from_input_file("input.json")
+    jobs = generate_random_instance(num_jobs=5, total_time_slots=5)
     output = schedule_jobs(jobs)
     print("Optimal schedules found:")
     for schedule in output:

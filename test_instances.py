@@ -1,5 +1,5 @@
 # a heuristic to generate an optimal scheduling instance
-from math import ceil
+from math import ceil, floor
 from random import random
 from job import job
 from penalty_function import penalty_function
@@ -10,7 +10,7 @@ def generate_random_instance(num_jobs, total_time_slots):
         id = str(id)
         release_time = ceil(random() * (total_time_slots))
         deadline = release_time + ceil(random() * (total_time_slots - release_time))
-        processing_time = ceil(random() * (deadline - release_time))
+        processing_time = deadline - release_time - floor(random() * (deadline - release_time))
         reward = (random() * 100)
         drop_penalty = (random() * 100)
         penalty_slope = random() * 10
