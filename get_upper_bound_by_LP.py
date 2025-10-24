@@ -20,6 +20,7 @@ def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
         # t_hat is current timestep, a fixed value
         t_hat = current_timeslot - 1 # NOTE: do we need to -1 here?
 
+        num_jobs = len(jobs["job_instances"])
         # t_i_asterisk is the last time step (so they are integers) by which the penalty of pushing the job back by t_i_asterisk time slots does NOT exceeds the reward of job i
         t_i_asterisk = [0] * num_jobs
         for job_index, job_instance in enumerate(jobs["job_instances"]):
@@ -52,7 +53,6 @@ def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
         # x_i_t denotes whether we schedule job i at time slot t. In the original ILP problem it is a binary **decision** variable, but in the LP relaxation it is a continuous **decision** variable in [0,1].
         # now we construct the coefficients for x_i_t. They are all 0 because they do not appear in the objective function.
         # we will flatten the 2D (job i, time slot t) structure into a 1D list for linprog.
-        num_jobs = len(jobs["job_instances"])
         num_time_slots = jobs["total_time_slots"]
         x_i_t_coefficients = [0] * (num_jobs * num_time_slots)
 
@@ -192,6 +192,11 @@ def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
         # For every job from 1 to total job amount, z_i in [0,1]
         for job_index in range(num_jobs):
             bounds.append((0, 1))
+        # I thought linprog is maximizing by default, but it turns out it is minimizing by default. Therefore we need to negate the objective function coefficients to convert our maximization problem into a minimization problem.
+        objective_function_coefficients = [-coeff for coeff in objective_function_coefficients]
+        res = linprog(c=objective_function_coefficients, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method='highs')
+        print(f"LP relaxation result at time slot {current_timeslot}: {res}")
+        return -res.fun  # negate back to get the maximized value
 
     else:
         # not implemented yet
