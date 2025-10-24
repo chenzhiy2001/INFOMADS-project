@@ -1,4 +1,5 @@
 # scipy for MILP
+from math import floor
 from scipy.optimize import linprog
 
 def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
@@ -28,7 +29,7 @@ def get_upper_bound_by_LP(partial_schedule, current_timeslot, jobs):
                 # penalty is constant, so t_i_asterisk is the final time slot
                 t_i_asterisk[job_index] = jobs.total_time_slots
             else:
-                t_i_asterisk_value = (w_i_hat[job_index] - intercept) / slope # round down to nearest integer, which make sense because we want the LAST time step that is still WITHIN the reward
+                t_i_asterisk_value = floor((w_i_hat[job_index] - intercept) / slope) # round down to nearest integer, which make sense because we want the LAST time step that is still WITHIN the reward
                 if t_i_asterisk_value < 0:
                     t_i_asterisk[job_index] = 0
                 else:

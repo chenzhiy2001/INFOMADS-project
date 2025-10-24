@@ -140,14 +140,16 @@ def bruteforce_schedule(current_time_slot, job_instances, total_time_slots, rewa
                     reward_incurred_in_this_time_slot -= job.penalty_function.evaluate(tardiness)
             final_settle = 0
             for every_job in job_instances:
-                if schedule_counter(every_job.id, schedule_so_far) == 0:
+                if schedule_counter(every_job.id, schedule_so_far) + (1 if every_job.id == job.id else 0) == 0:
                     # job is not scheduled at all
                     final_settle -= every_job.drop_penalty
-                elif schedule_counter(every_job.id, schedule_so_far) < every_job.processing_time:
+                elif schedule_counter(every_job.id, schedule_so_far) + (1 if every_job.id == job.id else 0) < every_job.processing_time:
                     # job is unfinished
                     final_settle -= every_job.drop_penalty
                     # check if job is delayed
                     last_scheduled_time_slot = max(time_slot for time_slot, job_id in enumerate(schedule_so_far) if job_id == every_job.id)
+                    if every_job.id == job.id:
+                        last_scheduled_time_slot = max(last_scheduled_time_slot, current_time_slot)
                     if last_scheduled_time_slot > every_job.deadline:
                         tardiness = last_scheduled_time_slot - every_job.deadline
                         final_settle -= every_job.penalty_function.evaluate(tardiness)
