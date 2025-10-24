@@ -1,5 +1,5 @@
 import json
-from shutil import copy
+import copy
 from penalty_function import penalty_function
 from job import job
 from get_lower_bound_by_greedy import get_lower_bound_by_greedy
