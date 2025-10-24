@@ -92,6 +92,7 @@ def schedule_jobs(jobs):
     deleted_nodes = []
     # solutions where lower bound == upper bound
     optimal_solutions = [] # todo
+    branch_reports = []
     while BFS_queue:
         partial_schedule = BFS_queue.pop(0)
         # examine all "child nodes" (partial schedules) at the current time slot
@@ -125,6 +126,14 @@ def schedule_jobs(jobs):
                 }
                 branch_and_bound_tree[new_partial_schedule_id] = new_partial_schedule
                 branch_and_bound_tree[partial_schedule["id"]]["children_ids"].append(new_partial_schedule_id)
+                branch_reports.append({
+                    "action": "expand",
+                    "node_id": new_partial_schedule_id,
+                    "timeslot": current_timeslot,
+                    "job": job_instance.id,
+                    "lower_bound": lower_bound_for_this_assumption,
+                    "upper_bound": upper_bound_for_this_assumption
+                })
                 # then we decide whether to add this new schedule to BFS queue for FURTHER expansion
                 if lower_bound_for_this_assumption < upper_bound_for_this_assumption:  # add to BFS queue for further expansion
                     BFS_queue.append(new_partial_schedule)
@@ -147,6 +156,13 @@ def schedule_jobs(jobs):
                 }
                 branch_and_bound_tree[new_partial_schedule_id] = new_partial_schedule
                 branch_and_bound_tree[partial_schedule["id"]]["children_ids"].append(new_partial_schedule_id)
+                branch_reports.append({
+                    "action": "complete",
+                    "node_id": new_partial_schedule_id,
+                    "timeslot": current_timeslot,
+                    "job": job_instance.id,
+                    "value": final_reward
+                })
                 # no need to add to BFS queue since this is the last time slot
             else:
                 raise ValueError("Current time slot exceeds total time slots, which should not happen.")
@@ -167,19 +183,30 @@ def schedule_jobs(jobs):
                 for child_id in update_range_node["children_ids"]:
                     # 1. delete some branches whose upper bound < parent's new lower bound
                     if branch_and_bound_tree[child_id]["upper_bound"] < update_range_node["lower_bound"]:
+                        branch_reports.append({
+                            "action": "prune",
+                            "node_id": child_id,
+                            "timeslot": current_timeslot,
+                            "reason": "upper_bound_below_parent_lower_bound"
+                        })
                         # remove this child id from parent's children_ids so it's not reachable in the tree anymore
                         update_range_node["children_ids"].remove(child_id)
                         # add this child id to deleted_nodes for record
                         deleted_nodes.append(child_id)
                     # 2. record optimal solutions where lower bound == upper bound
                     if branch_and_bound_tree[child_id]["lower_bound"] == branch_and_bound_tree[child_id]["upper_bound"]:
+                        branch_reports.append({
+                            "action": "optimal",
+                            "node_id": child_id,
+                            "value": branch_and_bound_tree[child_id]["lower_bound"]
+                        })
                         optimal_solutions.append(branch_and_bound_tree[child_id])
             # move up to parent
             if update_range_node["parent_id"] is not None:
                 update_range_node = branch_and_bound_tree[update_range_node["parent_id"]]
             else:
                 break
-    return optimal_solutions
+    return optimal_solutions, branch_reports
 
 def main():
     # runtime : compare between bruteforce and infomads
@@ -188,9 +215,12 @@ def main():
 
     # jobs = load_jobs_from_input_file("input.json")
     jobs = generate_random_instance(num_jobs=5, total_time_slots=5)
-    output = schedule_jobs(jobs)
+    optimal_schedules, branch_reports = schedule_jobs(jobs)
+    print("Branch-and-bound trace:")
+    for report in branch_reports:
+        print(report)
     print("Optimal schedules found:")
-    for schedule in output:
+    for schedule in optimal_schedules:
         print(schedule)
     bruteforce_schedule_output = bruteforce_schedule(
         current_time_slot=1,
