@@ -40,7 +40,7 @@ def online_schedule(current_time_slot, job_instances, total_time_slots, reward_s
     # get all available jobs at this time slot
     available_jobs = []
     for job in job_instances:
-        # this definition is different from bruteforce: we only consider jobs in [release time, make-sense deadline]
+        # this definition is different from bruteforce: we only consider jobs in [release time, make-sense deadline)
         if job.release_time <= current_time_slot and current_time_slot < job.deadline + t_i_asterisk[job.id] - job.processing_time:
             available_jobs.append(job)
 
@@ -64,8 +64,8 @@ def online_schedule(current_time_slot, job_instances, total_time_slots, reward_s
         scheduled_time_slots = [time_slot for time_slot, job_id in enumerate(schedule_so_far) if job_id == best_job.id]
         if len(scheduled_time_slots) + 1 == best_job.processing_time: # job can be completed if we assign it at current_time_slot
             reward_incurred_in_this_time_slot += best_job.reward
-            if current_time_slot > best_job.deadline:
-                tardiness = current_time_slot - best_job.deadline
+            if current_time_slot > (best_job.deadline - 1):
+                tardiness = current_time_slot - (best_job.deadline - 1)
                 reward_incurred_in_this_time_slot -= best_job.penalty_function.evaluate(tardiness)
         return (reward_so_far + reward_incurred_in_this_time_slot,
                 schedule_so_far + (current_time_slot, best_job.id))
@@ -81,8 +81,8 @@ def online_schedule(current_time_slot, job_instances, total_time_slots, reward_s
                 final_settle -= job.drop_penalty
                 # check if job is delayed
                 last_scheduled_time_slot = max(time_slot for time_slot, job_id in enumerate(schedule_so_far) if job_id == job.id)
-                if last_scheduled_time_slot > job.deadline:
-                    tardiness = last_scheduled_time_slot - job.deadline
+                if last_scheduled_time_slot > (job.deadline - 1):
+                    tardiness = last_scheduled_time_slot - (job.deadline - 1)
                     final_settle -= job.penalty_function.evaluate(tardiness)
         return (
             reward_so_far + final_settle,
@@ -93,8 +93,8 @@ def online_schedule(current_time_slot, job_instances, total_time_slots, reward_s
         scheduled_time_slots = [time_slot for time_slot, job_id in enumerate(schedule_so_far) if job_id == best_job.id]
         if len(scheduled_time_slots) + 1 == best_job.processing_time: # job can be completed if we assign it at current_time_slot
             reward_incurred_in_this_time_slot += best_job.reward
-            if current_time_slot > best_job.deadline:
-                tardiness = current_time_slot - best_job.deadline
+            if current_time_slot > (best_job.deadline - 1):
+                tardiness = current_time_slot - (best_job.deadline - 1)
                 reward_incurred_in_this_time_slot -= best_job.penalty_function.evaluate(tardiness)
         final_settle = 0
         for job in job_instances:
@@ -108,8 +108,8 @@ def online_schedule(current_time_slot, job_instances, total_time_slots, reward_s
                 last_scheduled_time_slot = max(time_slot for time_slot, job_id in enumerate(schedule_so_far) if job_id == job.id)
                 if job.id == best_job.id:
                     last_scheduled_time_slot = max(last_scheduled_time_slot, current_time_slot)
-                if last_scheduled_time_slot > job.deadline:
-                    tardiness = last_scheduled_time_slot - job.deadline
+                if last_scheduled_time_slot > (job.deadline - 1):
+                    tardiness = last_scheduled_time_slot - (job.deadline - 1)
                     final_settle -= job.penalty_function.evaluate(tardiness)
         return (
             reward_so_far + reward_incurred_in_this_time_slot + final_settle,

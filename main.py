@@ -47,8 +47,8 @@ def load_jobs_from_input_file(file_path):
         pf_data = job_data["penalty_function"]
         pf = penalty_function(pf_data["function_type"], pf_data["parameters"])
         # make sure each job's release time and deadline are within total_time_slots
-        if not (1 <= job_data["release_time"] < job_data["deadline"] <= data["total_time_slots"]):
-            raise ValueError(f"Job {job_data['id']}'s release time and deadline must be within [1,{data['total_time_slots']}(total_time_slots)].")
+        if not (1 <= job_data["release_time"] < job_data["deadline"] <= (data["total_time_slots"] + 1 )): # deadline itself is not schedulable
+            raise ValueError(f"Job {job_data['id']} has illegal release time {job_data['release_time']} or deadline {job_data['deadline']}. total time slots: {data['total_time_slots']}.")
         job_instance = job(
             id=job_data["id"],
             release_time=job_data["release_time"],

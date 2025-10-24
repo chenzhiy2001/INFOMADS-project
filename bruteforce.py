@@ -87,8 +87,8 @@ def bruteforce_schedule(current_time_slot, job_instances, total_time_slots, rewa
             scheduled_time_slots = [time_slot for time_slot, job_id in enumerate(schedule_so_far) if job_id == job.id]
             if len(scheduled_time_slots) + 1 == job.processing_time: # job can be completed if we assign it at current_time_slot
                 reward_incurred_in_this_time_slot += job.reward
-                if current_time_slot > job.deadline:
-                    tardiness = current_time_slot - job.deadline
+                if current_time_slot > (job.deadline - 1):
+                    tardiness = current_time_slot - (job.deadline - 1)
                     reward_incurred_in_this_time_slot -= job.penalty_function.evaluate(tardiness)
             candidate_solutions.append(bruteforce_schedule(
                 current_time_slot + 1,
@@ -118,8 +118,8 @@ def bruteforce_schedule(current_time_slot, job_instances, total_time_slots, rewa
                 final_settle -= job.drop_penalty
                 # check if job is delayed
                 last_scheduled_time_slot = max(time_slot for time_slot, job_id in enumerate(schedule_so_far) if job_id == job.id)
-                if last_scheduled_time_slot > job.deadline:
-                    tardiness = last_scheduled_time_slot - job.deadline
+                if last_scheduled_time_slot > (job.deadline - 1):
+                    tardiness = last_scheduled_time_slot - (job.deadline - 1)
                     final_settle -= job.penalty_function.evaluate(tardiness)
         return (
             reward_so_far + final_settle,
@@ -135,8 +135,8 @@ def bruteforce_schedule(current_time_slot, job_instances, total_time_slots, rewa
             scheduled_time_slots = [time_slot for time_slot, job_id in enumerate(schedule_so_far) if job_id == job.id]
             if len(scheduled_time_slots) + 1 == job.processing_time: # job can be completed if we assign it at current_time_slot
                 reward_incurred_in_this_time_slot += job.reward
-                if current_time_slot > job.deadline:
-                    tardiness = current_time_slot - job.deadline
+                if current_time_slot > (job.deadline - 1):
+                    tardiness = current_time_slot - (job.deadline - 1)
                     reward_incurred_in_this_time_slot -= job.penalty_function.evaluate(tardiness)
             final_settle = 0
             for every_job in job_instances:
@@ -150,8 +150,8 @@ def bruteforce_schedule(current_time_slot, job_instances, total_time_slots, rewa
                     last_scheduled_time_slot = max(time_slot for time_slot, job_id in enumerate(schedule_so_far) if job_id == every_job.id)
                     if every_job.id == job.id:
                         last_scheduled_time_slot = max(last_scheduled_time_slot, current_time_slot)
-                    if last_scheduled_time_slot > every_job.deadline:
-                        tardiness = last_scheduled_time_slot - every_job.deadline
+                    if last_scheduled_time_slot > (every_job.deadline - 1):
+                        tardiness = last_scheduled_time_slot - (every_job.deadline - 1)
                         final_settle -= every_job.penalty_function.evaluate(tardiness)
             candidate_solutions.append((
                 reward_so_far + reward_incurred_in_this_time_slot + final_settle,

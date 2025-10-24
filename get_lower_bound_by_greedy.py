@@ -9,12 +9,12 @@ def get_lower_bound_by_greedy(partial_schedule, current_timeslot, jobs):
         if list(partial_schedule["content"].values()).count(job_instance.id) == job_instance.processing_time:
             # job is finished, check if it's on time or tardy
             completion_time = max(t for t, job_id in partial_schedule["content"].items() if job_id == job_instance.id)
-            if completion_time <= job_instance.deadline:
+            if completion_time <= (job_instance.deadline - 1):
                 # on time
                 completed_jobs_reward += job_instance.reward
             else:
                 # tardy
-                tardiness = completion_time - job_instance.deadline
+                tardiness = completion_time - (job_instance.deadline - 1)
                 tardiness_penalty = job_instance.penalty_function.evaluate(tardiness)
                 completed_jobs_reward += job_instance.reward - tardiness_penalty
         elif list(partial_schedule["content"].values()).count(job_instance.id) > job_instance.processing_time:
@@ -42,11 +42,11 @@ def get_lower_bound_by_greedy(partial_schedule, current_timeslot, jobs):
             if list(partial_schedule["content"].values()).count(selected_job.id) == selected_job.processing_time:
                 # Job is completed, check if it's on time or tardy
                 completion_time = t
-                if completion_time <= selected_job.deadline:
+                if completion_time <= (selected_job.deadline - 1):
                     reward_change += selected_job.reward
                 else:
                     # Calculate tardiness penalty
-                    tardiness = completion_time - selected_job.deadline
+                    tardiness = completion_time - (selected_job.deadline - 1)
                     tardiness_penalty = selected_job.penalty_function.evaluate(tardiness)
                     reward_change += selected_job.reward - tardiness_penalty
 
