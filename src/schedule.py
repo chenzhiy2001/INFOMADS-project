@@ -2,12 +2,13 @@ from src.job import Job
 import copy
 
 from typing import List
+from typing import Optional
 
 class Schedule:
     def __init__(self, jobs: list[Job], total_time_slots: int):
         self.jobs: List[Job] = jobs
         self.T = total_time_slots
-        self.schedule = [None] * self.T
+        self.schedule: List[Optional[Job]] = [None] * self.T
 
         # update each job's t_i_asterisk
         for job in self.jobs:
@@ -104,3 +105,13 @@ class Schedule:
                 _score -= job.drop_penalty
 
         return _score
+
+    def export(self, path: str):
+        with open(path, 'w') as file:
+            for job in self.jobs:
+                scheduled_times_slots = [t for t, job_id in enumerate(self.schedule) if job_id == job.id]
+                if len(scheduled_times_slots) == 0:
+                    file.write('null\n')
+                else:
+                    file.write(', '.join(scheduled_times_slots) + '\n')
+            file.write(f'{self.score()}\n')
