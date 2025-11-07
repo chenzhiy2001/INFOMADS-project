@@ -1,11 +1,13 @@
-class penalty_function:
+
+
+class PenaltyFunction:
     '''A penalty function is defined by:
     - a string of function type: "per-timeslot", "linear"
     - an object defining the function parameters:
       - "per-timeslot": a list of (time, penalty) points, can be used to define step-wise functions
       - "linear": a slope (real number) and an intercept (real number)
     '''
-    def __init__(self, function_type, parameters):
+    def __init__(self, function_type: str, parameters: dict):
         self.function_type = function_type
         if function_type not in ["per-timeslot", "linear"]:
             raise ValueError("Invalid function type. Must be 'per-timeslot' or 'linear'.")

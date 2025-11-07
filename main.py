@@ -1,67 +1,13 @@
 import json
 import copy
-from penalty_function import penalty_function
-from job import job
-from get_lower_bound_by_greedy import get_lower_bound_by_greedy
-from get_upper_bound_by_LP import get_upper_bound_by_LP
+from src.penalty_function import PenaltyFunction
+from src.job import Job
+from src.get_lower_bound_by_greedy import get_lower_bound_by_greedy
+from src.get_upper_bound_by_LP import get_upper_bound_by_LP
 from test_instances import generate_random_instance
-from bruteforce import bruteforce_schedule, schedule_counter
+# from src.bruteforce import bruteforce_schedule, schedule_counter
 
-def load_jobs_from_input_file(file_path):
-    '''Load jobs from a JSON input file.
-    The JSON file should have the following structure:
-    ```
-    {
-        "total_time_slots": 10,
-        "jobs": [
-            {
-                "id": "job1",
-                "release_time": 1,
-                "processing_time": 2,
-                "deadline": 5,
-                "reward": 10,
-                "drop_penalty": 5,
-                "penalty_function": {
-                    "function_type": "linear",
-                    "parameters": {
-                        "slope": 1,
-                        "intercept": 0
-                    }
-                }
-            }
-        ]
-    }
-    ```
-    total_time_slots denotes how many time slots we have. 
-    time slot starts from 1 to total_time_slots, inclusive.
-    '''
-
-    with open(file_path, 'r') as f:
-        data = json.load(f)
-
-    jobs = {
-        "total_time_slots": data["total_time_slots"],
-        "job_instances": []
-    }
-    for job_data in data["jobs"]:
-        # Construct penalty function (pf)
-        pf_data = job_data["penalty_function"]
-        pf = penalty_function(pf_data["function_type"], pf_data["parameters"])
-        # make sure each job's release time and deadline are within total_time_slots
-        if not (1 <= job_data["release_time"] < job_data["deadline"] <= (data["total_time_slots"] + 1 )): # deadline itself is not schedulable
-            raise ValueError(f"Job {job_data['id']} has illegal release time {job_data['release_time']} or deadline {job_data['deadline']}. total time slots: {data['total_time_slots']}.")
-        job_instance = job(
-            id=job_data["id"],
-            release_time=job_data["release_time"],
-            processing_time=job_data["processing_time"],
-            deadline=job_data["deadline"],
-            reward=job_data["reward"],
-            drop_penalty=job_data["drop_penalty"],
-            penalty_function=pf
-        )
-        jobs["job_instances"].append(job_instance)
-    
-    return jobs
+from src.utility import load_jobs_from_input_file
 
 
 def schedule_jobs(jobs):
@@ -213,24 +159,25 @@ def main():
     # online: existing work vs infomads
     # offline: bruteforce vs infomads
 
-    # jobs = load_jobs_from_input_file("input.json")
-    jobs = generate_random_instance(num_jobs=5, total_time_slots=5)
-    optimal_schedules, branch_reports = schedule_jobs(jobs)
-    print("Branch-and-bound trace:")
-    for report in branch_reports:
-        print(report)
-    print("Optimal schedules found:")
-    for schedule in optimal_schedules:
-        print(schedule)
-    bruteforce_schedule_output = bruteforce_schedule(
-        current_time_slot=1,
-        job_instances=jobs["job_instances"],
-        total_time_slots=jobs["total_time_slots"],
-        reward_so_far=0,
-        schedule_so_far=[]
-    )
-    print("Bruteforce schedule output:")
-    print(bruteforce_schedule_output)
+    jobs = load_jobs_from_input_file("input.json")
+    print(jobs)
+    # jobs = generate_random_instance(num_jobs=5, total_time_slots=5)
+    # optimal_schedules, branch_reports = schedule_jobs(jobs)
+    # print("Branch-and-bound trace:")
+    # for report in branch_reports:
+    #     print(report)
+    # print("Optimal schedules found:")
+    # for schedule in optimal_schedules:
+    #     print(schedule)
+    # bruteforce_schedule_output = bruteforce_schedule(
+    #     current_time_slot=1,
+    #     job_instances=jobs["job_instances"],
+    #     total_time_slots=jobs["total_time_slots"],
+    #     reward_so_far=0,
+    #     schedule_so_far=[]
+    # )
+    # print("Bruteforce schedule output:")
+    # print(bruteforce_schedule_output)
     
 
 

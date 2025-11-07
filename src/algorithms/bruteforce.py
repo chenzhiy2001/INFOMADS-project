@@ -1,6 +1,6 @@
 # given jobs, find the optimal scheduling using brute-force search
 import copy
-from job import job
+from job import Job
 from operator import add
 from collections.abc import Iterable, Iterator, Sequence
 from typing import TypeVar

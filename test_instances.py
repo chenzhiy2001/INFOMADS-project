@@ -1,8 +1,8 @@
 # a heuristic to generate an optimal scheduling instance
 from math import ceil, floor
 import random
-from job import job
-from penalty_function import penalty_function
+from src.job import Job
+from src.penalty_function import PenaltyFunction
 
 random.seed(114514)
 def generate_random_instance(num_jobs, total_time_slots):
@@ -16,8 +16,8 @@ def generate_random_instance(num_jobs, total_time_slots):
         drop_penalty = (random.random() * 100)
         penalty_slope = (random.random() * 10)
         penalty_intercept = (random.random() * 20)
-        penalty_func = penalty_function(function_type="linear", parameters={"slope": penalty_slope, "intercept": penalty_intercept})
-        job_instances.append(job(id, release_time, processing_time, deadline, reward, drop_penalty, penalty_func))
+        penalty_func = PenaltyFunction(function_type="linear", parameters={"slope": penalty_slope, "intercept": penalty_intercept})
+        job_instances.append(Job(id, release_time, processing_time, deadline, reward, drop_penalty, penalty_func))
     print(f"Generated {num_jobs} random job instances with total time slots {total_time_slots}.")
     print("Job instances:")
     for job_instance in job_instances:
