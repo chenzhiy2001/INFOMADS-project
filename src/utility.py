@@ -8,6 +8,84 @@ from typing import Optional
 from src.schedule import Schedule
 
 def load_jobs_from_input_file(file_path) -> Schedule:
+    if file_path.endswith('.json'):
+        return load_jobs_from_input_file_json(file_path)
+    elif file_path.endswith('.txt'):
+        return load_jobs_from_input_file_txt(file_path)
+    else:
+        raise ValueError(f"Unsupported file extension: {file_path}")
+
+def load_solution(solution: str, schedule: Schedule) -> Schedule:
+    with open(solution, 'r') as f:
+        lines = [line.strip() for line in f if line.strip() != ""]
+    
+    for job_id in range(len(schedule.jobs)):
+        time_slots = lines[job_id].split(',')
+        for time_slot in time_slots:
+            if time_slot == 'null':
+                continue
+            schedule.schedule[int(time_slot) - 1] = schedule.jobs[job_id].id
+
+    for job in schedule.jobs:
+        if sum(1 for t, job_id in enumerate(schedule.schedule) if job_id == job.id) >= job.processing_time:
+            job.completed = True
+
+    return schedule
+
+def load_jobs_from_input_file_txt(file_path) -> Schedule:
+
+    with open(file_path, 'r') as f:
+        lines = [line.strip() for line in f if line.strip() != ""]
+
+    # print(lines)
+    num_jobs = int(lines[0])
+    offset = 1
+    if len(lines[1].split(',')) < 2:
+        num_jobs = int(lines[1])
+        offset = 2
+
+    jobs = []
+
+    min_release_time = float('inf')
+    for i in range(num_jobs):
+        job_data = lines[i + offset].split(',')
+        release_time, deadline, processing_time, reward, drop_penalty = job_data
+        min_release_time = min(min_release_time, int(release_time))
+
+    assert min_release_time <= 1, f"Minimum release time must be less than or equal to 1, but got {min_release_time}"
+
+    for i in range(num_jobs):
+        job_data = lines[i + offset].split(',')
+        release_time, deadline, processing_time, reward, drop_penalty = job_data
+        penalty_function = PenaltyFunction(
+            function_type="linear",
+            parameters={
+                "slope": int(reward)+int(drop_penalty),
+                "intercept": int(reward)+int(drop_penalty)
+            }
+        )
+
+        job = Job(
+            id=i,
+            release_time=int(release_time) - min_release_time,
+            deadline=int(deadline),
+            processing_time=int(processing_time),
+            reward=int(reward),
+            drop_penalty=int(drop_penalty),
+            penalty_function=penalty_function
+        )
+        jobs.append(job)
+
+    schedule = Schedule(
+        jobs=jobs,
+        total_time_slots=max(job.deadline for job in jobs)
+    )
+
+    return schedule
+
+
+
+def load_jobs_from_input_file_json(file_path) -> Schedule:
     '''Load jobs from a JSON input file.
     The JSON file should have the following structure:
     ```
@@ -43,6 +121,8 @@ def load_jobs_from_input_file(file_path) -> Schedule:
         "total_time_slots": data["total_time_slots"],
         "job_instances": []
     }
+
+
     for job_data in data["jobs"]:
         # Construct penalty function (pf)
         pf_data = job_data["penalty_function"]

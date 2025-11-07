@@ -56,6 +56,9 @@ class Job:
                     self.t_i_asterisk = tardiness
                     break
 
+        if self.t_i_asterisk < 0:
+            self.t_i_asterisk = 0
+
     def __str__(self):
         return f"Job(id={self.id}, release_time={self.release_time}, processing_time={self.processing_time}, deadline={self.deadline}, reward={self.reward}, drop_penalty={self.drop_penalty}, penalty_function={self.penalty_function})"
 

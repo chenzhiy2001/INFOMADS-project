@@ -14,6 +14,8 @@ class Schedule:
             if job.t_i_asterisk == None:
                 job.t_i_asterisk = self.T
         
+        # print([job.t_i_asterisk for job in self.jobs])
+        
         # current time step
         self.t = -1
 
