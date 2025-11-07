@@ -46,11 +46,14 @@ class Job:
         self.t_i_asterisk = None
         if self.penalty_function.function_type == "linear":
             if self.penalty_function.parameters["slope"] > 0: # if it's zero, then the t_i^* = T
+                # t_i_asterisk represents maximum acceptable tardiness (delay beyond deadline)
                 self.t_i_asterisk = math.floor((self.reward - self.penalty_function.parameters['intercept'])/(self.penalty_function.parameters["slope"]))
         else:
-            for t in range(1, len(self.penalty_function.parameters)):
-                if self.penalty_function.parameters[t][1] > self.reward:
-                    self.t_i_asterisk = t
+            # For non-linear penalty functions, find the tardiness where penalty exceeds reward
+            for tardiness in range(1, len(self.penalty_function.parameters)):
+                if self.penalty_function.parameters[tardiness][1] > self.reward:
+                    # t_i_asterisk represents maximum acceptable tardiness
+                    self.t_i_asterisk = tardiness
                     break
 
     def __str__(self):

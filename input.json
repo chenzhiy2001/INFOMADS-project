@@ -3,7 +3,7 @@
     "jobs": [
         {
             "id": "job1",
-            "release_time": 1,
+            "release_time": 0,
             "processing_time": 2,
             "deadline": 5,
             "reward": 10,

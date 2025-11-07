@@ -13,11 +13,14 @@ class Scheduler:
         assert setting in ["offline", "online"], f"Setting must be either 'offline' or 'online'. Got {setting}"
 
         self.solver = None
+
+        self.setup()
     
     
     def setup(self):
         match self.name:
             case "bruteforce":
+                raise NotImplementedError("Bruteforce solver is not implemented yet")
                 self.solver = ...
             case "ours":
                 self.solver = OurOffline()
@@ -25,4 +28,4 @@ class Scheduler:
                 raise ValueError(f"Scheduler {self.name} was not found.")
 
     def schedule(self, schedule=Schedule) -> Schedule:
-        self.solver.schedule(schedule)
+        return self.solver.schedule(schedule)
