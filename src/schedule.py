@@ -34,28 +34,37 @@ class Schedule:
         """
 
         candidates = []
-        if self.schedulable_jobs(self.t+1) == 0:
-            # schedule null
+        
+        # Check if we've already scheduled all time slots (t+1 would be out of bounds)
+        # When t == T-1, we've scheduled all T time slots (indices 0 to T-1)
+        if self.t >= self.T - 1:
+            return candidates
+        
+        schedulable = self.schedulable_jobs(self.t+1)
+        if len(schedulable) == 0:
+            # schedule null (no job at this time slot)
             candidate = self.copy()
-            candidate.schedule[self.t] = None
+            candidate.schedule[self.t + 1] = None
             candidate.t = self.t + 1
-            candidates.append(candidate)
             candidate.upper_bound = None
             candidate.lower_bound = None
+            candidates.append(candidate)
             
             return candidates
         
 
-        for job in self.schedulable_jobs(self.t+1):
+        for job in schedulable:
             candidate = self.copy()
-            candidate.schedule[self.t] = job.id
+            candidate.schedule[self.t + 1] = job.id
             candidate.t = self.t + 1
             candidate.upper_bound = None
             candidate.lower_bound = None
 
+            # Mark job as completed in the candidate if it has been fully scheduled
+            candidate_job = candidate.get_job_from_id(job.id)
             number_of_scheduled_steps = sum(1 for job_id in candidate.schedule if job_id == job.id)
-            if number_of_scheduled_steps == job.processing_time:
-                job.completed = True
+            if number_of_scheduled_steps == candidate_job.processing_time:
+                candidate_job.completed = True
 
             candidates.append(candidate)
 

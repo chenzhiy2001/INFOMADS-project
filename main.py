@@ -16,11 +16,10 @@ def main(name: str = 'ours', setting: str = 'offline'):
     # offline: bruteforce vs infomads
 
     schedule = load_jobs_from_input_file("input.json")
-    print(schedule)
-
     scheduler = Scheduler(name, setting)
     schedule = scheduler.schedule(schedule)
-    print(schedule)
+    
+    print(f"Schedule found with score: {schedule.score()}")
     display_schedule(schedule)
 
     

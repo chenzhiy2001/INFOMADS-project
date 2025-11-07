@@ -23,8 +23,6 @@ class OurOffline(BaseOfflineSolver):
 
         # while candates are not empty, expend
         while len(candidates) != 0:
-            print('candidates: ', len(candidates))
-
             # * 1. check that every candidate has a lower and upper bound
             prune_list = []
             for i in range(len(candidates)): # O(n)  - should be okay
@@ -50,7 +48,8 @@ class OurOffline(BaseOfflineSolver):
             candidates.remove(best_candidate)
             
             # * 4. Check if it's a complete schedule, otherwise expand it
-            if best_candidate.t >= best_candidate.T:
+            # When t == T-1, we've scheduled all T time slots (complete schedule)
+            if best_candidate.t >= best_candidate.T - 1:
                 # Complete schedule - evaluate it
                 candidate_score = best_candidate.score()
                 if candidate_score > best_lower_case:

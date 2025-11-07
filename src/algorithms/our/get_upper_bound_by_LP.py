@@ -15,14 +15,6 @@ def LP_linear(schedule: Schedule) -> float:
     # r_i is the release time of job i, a fixed value
     r_i = [job_instance.release_time for job_instance in schedule.jobs]
     t_i_asterisk = [job_instance.t_i_asterisk for job_instance in schedule.jobs]
-    
-    print(f"DEBUG: Job details:")
-    for i, job in enumerate(schedule.jobs):
-        print(f"  Job {i} ({job.id}): release={job.release_time}, deadline={job.deadline}, "
-              f"processing_time={job.processing_time}, t_i_asterisk={job.t_i_asterisk}, "
-              f"reward={job.reward}, penalty slope={job.penalty_function.parameters['slope']}, "
-              f"penalty intercept={job.penalty_function.parameters['intercept']}")
-
     # d_i is the deadline of job i, a fixed value
     d_i = [job_instance.deadline for job_instance in schedule.jobs]
 
@@ -39,7 +31,7 @@ def LP_linear(schedule: Schedule) -> float:
     # now we construct the coefficients for x_i_t. They are all 0 because they do not appear in the objective function.
     # we will flatten the 2D (job i, time slot t) structure into a 1D list for linprog.
     num_time_slots = schedule.T
-    # todo: maybe increment by one
+    
     x_i_t_coefficients = [0] * (num_jobs * num_time_slots)
 
     # now we construct the coefficients for y_i. The coefficient for y_i is w_i_hat.
@@ -85,7 +77,7 @@ def LP_linear(schedule: Schedule) -> float:
         z_i_variable_index = num_jobs * num_time_slots + num_jobs + num_jobs + job_index
         constraint_row[z_i_variable_index] = 1
         # coefficient for t_i_tilde
-        t_i_tilde_variable_index = num_jobs * num_time_slots + job_index
+        t_i_tilde_variable_index = num_jobs * num_time_slots + num_jobs + job_index
         constraint_row[t_i_tilde_variable_index] = -1
         A_ub.append(constraint_row)
         b_ub.append(0)
@@ -114,7 +106,7 @@ def LP_linear(schedule: Schedule) -> float:
             # do we add a +1 here?
             constraint_row[x_i_t_variable_index] = (t_0_based) - d_i[job_index] # (t + 1) because t is 0-based index, but time slots are 1-based.
             # coefficient for t_i_tilde
-            t_i_tilde_variable_index = num_jobs * num_time_slots + job_index
+            t_i_tilde_variable_index = num_jobs * num_time_slots + num_jobs + job_index
             constraint_row[t_i_tilde_variable_index] = -1
             A_ub.append(constraint_row)
             b_ub.append(0)
@@ -208,16 +200,6 @@ def LP_linear(schedule: Schedule) -> float:
         bounds.append((0, 1))
     # I thought linprog is maximizing by default, but it turns out it is minimizing by default. Therefore we need to negate the objective function coefficients to convert our maximization problem into a minimization problem.
     objective_function_coefficients = [-coeff for coeff in objective_function_coefficients]
-
-    print('Objective function coefficients:', np.array(objective_function_coefficients))
-    print('A_ub:\n', np.array(A_ub))
-    print('b_ub:\n', np.array(b_ub))
-    print('A_eq:\n', np.array(A_eq))
-    print('b_eq:\n', np.array(b_eq))
-    print('b_eq:\n', np.array(b_eq))
-    print('bounds:', bounds)
-
-
 
     res = linprog(c=objective_function_coefficients, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method='highs')
     # res = linprog(c=objective_function_coefficients, A_ub=A_ub, b_ub=b_ub, A_eq=None, b_eq=None, bounds=bounds, method='highs')
