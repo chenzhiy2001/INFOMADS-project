@@ -20,12 +20,12 @@ def main(file: str, name: str = 'ours', setting: str = 'offline', solution: Opti
     # schedule = load_jobs_from_input_file("input.txt")
     schedule = load_jobs_from_input_file(file)
 
-    # if solution is not None:
-    #     schedule = load_solution(solution, schedule)
-    # else:
-    #     # print(schedule)
-    #     scheduler = Scheduler(name, setting)
-    #     schedule = scheduler.schedule(schedule)
+    if solution is not None:
+        schedule = load_solution(solution, schedule)
+    else:
+        # print(schedule)
+        scheduler = Scheduler(name, setting)
+        schedule = scheduler.schedule(schedule)
     
     print(f"Schedule found with score: {schedule.score()}")
     display_schedule(schedule)

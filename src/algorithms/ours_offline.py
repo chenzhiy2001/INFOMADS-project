@@ -27,8 +27,8 @@ class OurOffline(BaseOfflineSolver):
         # while candates are not empty, expend
         
 
-        start_time = time.time()
-        processed = 0
+        # start_time = time.time()
+        
 
         # Initialize tqdm progress bar (updates only bar, does not change inner logic)
         with tqdm(total=0, position=0, leave=True, desc="Candidates in queue", dynamic_ncols=True) as pbar:
@@ -44,7 +44,7 @@ class OurOffline(BaseOfflineSolver):
                     # * 2. If a candidate has a lower UPPER bound than the best LOWER bound, we prune it
                     if candidates[i].upper_bound < best_lower_case:
                         prune_list.append(i)
-                    processed += 1
+                        pruned += 1
 
                 prune_list.sort(reverse=True)
                 for j, i in enumerate(prune_list):
@@ -54,8 +54,12 @@ class OurOffline(BaseOfflineSolver):
                 if len(candidates) == 0:
                     break
 
-                # * 3. Select candidate with highest upper bound
-                best_candidate = max(candidates, key=lambda x: x.upper_bound)
+                # # * 3. Select candidate with highest upper bound
+                # best_candidate = max(candidates, key=lambda x: x.upper_bound)
+                # candidates.remove(best_candidate)
+                
+                # * 3. Select candidate with highest lower bound
+                best_candidate = max(candidates, key=lambda x: x.lower_bound)
                 candidates.remove(best_candidate)
 
                 # * 4. Check if it's a complete schedule, otherwise expand it
@@ -72,8 +76,8 @@ class OurOffline(BaseOfflineSolver):
                     candidates.extend(new_candidates)
 
                 # Update tqdm bar (without altering code behavior)
-                elapsed = time.time() - start_time
-                pbar.set_description(f"Candidates: {len(candidates)} | Time: {elapsed:.1f}s | Processed: {processed} | Best Lower: {best_lower_case} | Best Upper: {best_candidate.upper_bound}")
+                # elapsed = time.time() - start_time
+                pbar.set_description(f"Candidates: {len(candidates)} | Best Lower: {best_lower_case:0.2f} | Best Upper: {best_candidate.upper_bound:0.2f}")
                 pbar.n = len(candidates)
                 pbar.refresh()
         return best_schedule
