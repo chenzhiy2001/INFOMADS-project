@@ -86,7 +86,6 @@ def LP_linear(schedule: Schedule) -> float:
     for job_index in range(num_jobs):
         constraint_row = [0] * total_num_decision_variables
         # coefficients for x_i_t
-        # todo: check if we need to add a -1 here
         for t in range(d_i[job_index], num_time_slots): # t from d_i - 1 to total_time_slots - 1 inclusive, corresponding to time slots from d_i to total_time_slots inclusive.
             variable_index = job_index * num_time_slots + t
             constraint_row[variable_index] = 1
@@ -98,7 +97,6 @@ def LP_linear(schedule: Schedule) -> float:
 
     # ub constraint number four: For every job i from 1 to total job amount, for every time slot t from d_i to total_time_slots, x_i_t * (t-d_i) <= i_i_tilde, where t in this formula is the time slot index (1-based)
     for job_index in range(num_jobs):
-        # todo: same as above
         for t_0_based in range(d_i[job_index], num_time_slots): # t from d_i - 1 to total_time_slots - 1 inclusive, corresponding to time slots from d_i to total_time_slots inclusive.
             constraint_row = [0] * total_num_decision_variables
             # coefficient for x_i_t

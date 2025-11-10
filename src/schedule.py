@@ -113,5 +113,5 @@ class Schedule:
                 if len(scheduled_times_slots) == 0:
                     file.write('null\n')
                 else:
-                    file.write(', '.join(scheduled_times_slots) + '\n')
+                    file.write(', '.join([t+1 for t in scheduled_times_slots]) + '\n')
             file.write(f'{self.score()}\n')

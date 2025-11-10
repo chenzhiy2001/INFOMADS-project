@@ -157,6 +157,8 @@ def display_schedule(schedule: Schedule, figsize=(14, 8), show_plot=True):
         schedule: Schedule object containing jobs and their assignments
         figsize: Tuple of (width, height) for the figure size
         show_plot: Whether to display the plot (set to False if you want to save without showing)
+
+    Note: We used AI to generate this function, as it is not a core part of our project, we still leave it here if you want to use it
     
     Returns:
         fig, ax: The matplotlib figure and axis objects

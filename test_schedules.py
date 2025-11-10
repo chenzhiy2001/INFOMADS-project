@@ -8,35 +8,35 @@ from src.scheduler import Scheduler
 
 
 class TestStringMethods(unittest.TestCase):
-    # def test_schedule_1(self):
-    #     path_jobs = 'tests/Job-1.txt'
-    #     path_solution = 'tests/Schedule-1.txt'
+    def test_schedule_1(self):
+        path_jobs = 'tests/Job-1.txt'
+        path_solution = 'tests/Schedule-1.txt'
 
-    #     # schedule the jobs
-    #     schedule_jobs = load_jobs_from_input_file(path_jobs)
-    #     schedule_solution = schedule_jobs.copy()
+        # schedule the jobs
+        schedule_jobs = load_jobs_from_input_file(path_jobs)
+        schedule_solution = schedule_jobs.copy()
 
-    #     scheduler = Scheduler('ours', 'offline')
-    #     schedule_jobs = scheduler.schedule(schedule_jobs)
+        scheduler = Scheduler('ours', 'offline')
+        schedule_jobs = scheduler.schedule(schedule_jobs)
 
-    #     schedule_solution = load_solution(path_solution, schedule_solution)
+        schedule_solution = load_solution(path_solution, schedule_solution)
 
-    #     self.assertEqual(schedule_jobs.score(), schedule_solution.score(), f"Got {schedule_jobs.score()} where as optimal is {schedule_solution.score()}")
+        self.assertEqual(schedule_jobs.score(), schedule_solution.score(), f"Got {schedule_jobs.score()} where as optimal is {schedule_solution.score()}")
         
-    # def test_schedule_2(self):
-    #     path_jobs = 'tests/Job-2.txt'
-    #     path_solution = 'tests/Schedule-2.txt'
+    def test_schedule_2(self):
+        path_jobs = 'tests/Job-2.txt'
+        path_solution = 'tests/Schedule-2.txt'
 
-    #     # schedule the jobs
-    #     schedule_jobs = load_jobs_from_input_file(path_jobs)
-    #     schedule_solution = schedule_jobs.copy()
+        # schedule the jobs
+        schedule_jobs = load_jobs_from_input_file(path_jobs)
+        schedule_solution = schedule_jobs.copy()
 
-    #     scheduler = Scheduler('ours', 'offline')
-    #     schedule_jobs = scheduler.schedule(schedule_jobs)
+        scheduler = Scheduler('ours', 'offline')
+        schedule_jobs = scheduler.schedule(schedule_jobs)
 
-    #     schedule_solution = load_solution(path_solution, schedule_solution)
+        schedule_solution = load_solution(path_solution, schedule_solution)
 
-    #     self.assertEqual(schedule_jobs.score(), schedule_solution.score(), f"Got {schedule_jobs.score()} where as optimal is {schedule_solution.score()}")
+        self.assertEqual(schedule_jobs.score(), schedule_solution.score(), f"Got {schedule_jobs.score()} where as optimal is {schedule_solution.score()}")
         
     def test_schedule_3(self):
         path_jobs = 'tests/Job-3.txt'
@@ -68,20 +68,20 @@ class TestStringMethods(unittest.TestCase):
 
         self.assertEqual(schedule_jobs.score(), schedule_solution.score(), f"Got {schedule_jobs.score()} whereas optimal is {schedule_solution.score()}")
 
-    # def test_schedule_5(self):
-    #     path_jobs = 'tests/Job-5.txt'
-    #     path_solution = 'tests/Schedule-5.txt'
+    def test_schedule_5(self):
+        path_jobs = 'tests/Job-5.txt'
+        path_solution = 'tests/Schedule-5.txt'
 
-    #     # schedule the jobs
-    #     schedule_jobs = load_jobs_from_input_file(path_jobs)
-    #     schedule_solution = schedule_jobs.copy()
+        # schedule the jobs
+        schedule_jobs = load_jobs_from_input_file(path_jobs)
+        schedule_solution = schedule_jobs.copy()
 
-    #     scheduler = Scheduler('ours', 'offline')
-    #     schedule_jobs = scheduler.schedule(schedule_jobs)
+        scheduler = Scheduler('ours', 'offline')
+        schedule_jobs = scheduler.schedule(schedule_jobs)
 
-    #     schedule_solution = load_solution(path_solution, schedule_solution)
+        schedule_solution = load_solution(path_solution, schedule_solution)
 
-    #     self.assertEqual(schedule_jobs.score(), schedule_solution.score(), f"Got {schedule_jobs.score()} whereas optimal is {schedule_solution.score()}")
+        self.assertEqual(schedule_jobs.score(), schedule_solution.score(), f"Got {schedule_jobs.score()} whereas optimal is {schedule_solution.score()}")
 
     def test_schedule_6(self):
         path_jobs = 'tests/Job-6.txt'
