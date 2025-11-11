@@ -56,9 +56,11 @@ This garantees that the cost of pushing a job back, even by just one time slot, 
 ## Runtime ⚠️
 
 ### Offline
-With no push-back allowed, because our Integer Linear Program has many variables, we observe that the LP drastically over-estimates the upper-bound of each branch. 
+Because our Integer Linear Program has many variables, we observe that the LP relaxation drastically over-estimates the upper-bound of each branch in the branch and bound algorithm. 
 
-Therefore our runtime is **close to bruteforce** as we essentially cut almost no branches. Keep this in mind when running our offline algorithm
+Therefore our runtime is **close to bruteforce** as we essentially cut almost no branches. Keep this in mind when running our offline algorithm.
+
+Furthermore, as python is not the fastest programming language, the runtime could be improved by implementing our algorithm in a compiled language (like Rust).
 
 ### Online
 This algorithm is very fast. But not very good :/
