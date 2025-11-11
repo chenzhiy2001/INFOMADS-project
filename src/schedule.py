@@ -106,6 +106,19 @@ class Schedule:
 
         return _score
 
+    def score_rewritten(self) -> float:
+        _score = 0
+        for job in self.jobs:
+            if job.completed:
+                _score += job.reward + job.drop_penalty
+                
+                latest_completion_time = max(t for t, job_id in enumerate(self.schedule) if job_id == job.id)
+                if latest_completion_time > job.deadline:
+                    tardiness = latest_completion_time - job.deadline
+                    _score -= job.penalty_function.evaluate(tardiness)
+
+        return _score
+
     def export(self, path: str):
         with open(path, 'w') as file:
             for job in self.jobs:

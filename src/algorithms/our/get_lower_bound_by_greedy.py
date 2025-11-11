@@ -36,7 +36,8 @@ def lower_bound(schedule: Schedule) -> float:
         schedule.t += best_candidate.processing_time
 
     # score the schedule
-    return schedule.score()
+    # return schedule.score()
+    return schedule.score_rewritten()
 
 
 

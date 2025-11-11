@@ -16,7 +16,9 @@ class OurOffline(BaseOfflineSolver):
     def schedule(self, schedule: Schedule) -> Schedule:
         best_upper_case = float('-inf')
         best_lower_case = float('-inf')
+        best_lower_case_correct = float('-inf')
         best_schedule = None
+        pruned = 0
 
         # add all of the possible candidates at t=1
         # assert schedule.t == -1, f"Provided schedule must be at t=-1, but got t={schedule.t}"
@@ -42,13 +44,14 @@ class OurOffline(BaseOfflineSolver):
                         candidates[i].upper_bound = get_upper_bound_by_LP(candidates[i])
 
                     # * 2. If a candidate has a lower UPPER bound than the best LOWER bound, we prune it
-                    if candidates[i].upper_bound < best_lower_case:
+                    if candidates[i].upper_bound <= best_lower_case:
                         prune_list.append(i)
                         pruned += 1
 
                 prune_list.sort(reverse=True)
-                for j, i in enumerate(prune_list):
-                    del candidates[i - j]
+                candidates = [c for j, c in enumerate(candidates) if j not in prune_list]
+                # for j, i in enumerate(prune_list):
+                    # del candidates[i - j]
 
                 # We somehow pruned everything...
                 if len(candidates) == 0:
@@ -57,29 +60,43 @@ class OurOffline(BaseOfflineSolver):
                 # # * 3. Select candidate with highest upper bound
                 # best_candidate = max(candidates, key=lambda x: x.upper_bound)
                 # candidates.remove(best_candidate)
+
+                # * 3. Select candidate with highest upper bound, then by highest lower bound
+                best_candidate = max(
+                    candidates,
+                    key=lambda x: (x.lower_bound, x.upper_bound)  # first order by the highest lower bound, then break ties by the highest upper bound
+                )
+                candidates.remove(best_candidate)
                 
                 # * 3. Select candidate with highest lower bound
-                best_candidate = max(candidates, key=lambda x: x.lower_bound)
-                candidates.remove(best_candidate)
+                # best_candidate = max(candidates, key=lambda x: x.lower_bound)
+                # candidates.remove(best_candidate)
 
                 # * 4. Check if it's a complete schedule, otherwise expand it
                 # When t == T-1, we've scheduled all T time slots (complete schedule)
-                if best_candidate.t >= best_candidate.T - 1:
+                candidate_score = best_candidate.score_rewritten()
+                if candidate_score > best_lower_case:
+                    best_lower_case = candidate_score
+                    best_schedule = best_candidate
+                    best_lower_case_correct = best_candidate.score()
+                
+                if best_candidate.t < best_candidate.T - 1:
                     # Complete schedule - evaluate it
-                    candidate_score = best_candidate.score()
-                    if candidate_score > best_lower_case:
-                        best_lower_case = candidate_score
-                        best_schedule = best_candidate
-                else:
+                    # candidate_score = best_candidate.score()
+                # else:
                     # Expand the candidate
                     new_candidates = best_candidate.get_candidates()
                     candidates.extend(new_candidates)
 
                 # Update tqdm bar (without altering code behavior)
                 # elapsed = time.time() - start_time
-                pbar.set_description(f"Candidates: {len(candidates)} | Best Lower: {best_lower_case:0.2f} | Best Upper: {best_candidate.upper_bound:0.2f}")
+                pbar.set_description(f"Candidates: {len(candidates)} | Best Lower: {best_lower_case:0.2f} (true: {best_lower_case_correct:0.2f}) | Best Upper: {best_candidate.upper_bound:0.2f} | Pruned branches: {pruned}")
                 pbar.n = len(candidates)
                 pbar.refresh()
+
+                if all(candidate.upper_bound <= best_lower_case for candidate in candidates):
+                    break  # we found AN optimal schedule
+
         return best_schedule
         
         
